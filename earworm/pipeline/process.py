@@ -59,7 +59,7 @@ def detect_device() -> str:
 @click.option(
     "--transcriber",
     type=click.Choice(["basic-pitch", "bytedance"]),
-    default="basic-pitch",
+    default="bytedance",
     help="Transcription backend to use.",
 )
 @click.option(

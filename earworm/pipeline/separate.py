@@ -45,21 +45,25 @@ def separate(
     """
     console.print(f"[bold blue]Separating sources[/] using model [cyan]{model}[/]")
 
-    # Build the demucs command
-    cmd = [
-        "python",
-        "-m",
-        "demucs",
-        "-n",
-        model,
-        "-o",
-        str(output_dir),
-    ]
-
+    # Build demucs args
+    demucs_args = ["-n", model, "-o", str(output_dir)]
     if device:
-        cmd.extend(["-d", device])
+        demucs_args.extend(["-d", device])
+    demucs_args.append(str(audio_path))
 
-    cmd.append(str(audio_path))
+    # torchaudio 2.10+ hardcodes torchcodec for save(), which needs
+    # FFmpeg shared libs. Patch it to use soundfile instead.
+    wrapper = "\n".join([
+        "import soundfile as sf, sys, torchaudio",
+        "def _save_sf(uri, src, sample_rate, **kw):",
+        "    wav = src.cpu().numpy()",
+        "    if wav.shape[0] <= 2: wav = wav.T",
+        "    sf.write(uri, wav, sample_rate)",
+        "torchaudio.save = _save_sf",
+        "sys.argv = ['demucs'] + sys.argv[1:]",
+        "from demucs.separate import main; main()",
+    ])
+    cmd = ["python", "-c", wrapper] + demucs_args
 
     # Run demucs
     subprocess.run(cmd, check=True)

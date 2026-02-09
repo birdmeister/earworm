@@ -50,9 +50,9 @@ dev = [
 earworm = "earworm.pipeline.process:process"
 
 [project.urls]
-Homepage = "https://github.com/yourname/earworm"
-Repository = "https://github.com/yourname/earworm"
-Issues = "https://github.com/yourname/earworm/issues"
+Homepage = "https://github.com/birdmeister/earworm"
+Repository = "https://github.com/birdmeister/earworm"
+Issues = "https://github.com/birdmeister/earworm/issues"
 
 [tool.setuptools.packages.find]
 include = ["earworm*"]

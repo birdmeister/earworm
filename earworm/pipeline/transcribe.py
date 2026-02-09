@@ -93,7 +93,7 @@ def transcribe_bytedance(
         Path to the generated MIDI file.
     """
     try:
-        from piano_transcription_inference import PianoTranscription, load_audio, sample_rate
+        from piano_transcription_inference import PianoTranscription, sample_rate
     except ImportError:
         console.print(
             "[red]ByteDance transcriber not installed.[/]\n"
@@ -103,7 +103,10 @@ def transcribe_bytedance(
 
     console.print("[bold blue]Transcribing with ByteDance piano model[/]")
 
-    audio, _ = load_audio(str(audio_path), sr=sample_rate, mono=True)
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+
+    import librosa
+    audio, _ = librosa.load(str(audio_path), sr=sample_rate, mono=True)
 
     transcriptor = PianoTranscription(device=device)
     transcriptor.transcribe(audio, str(output_path))
@@ -115,7 +118,7 @@ def transcribe_bytedance(
 def transcribe(
     audio_path: Path,
     output_path: Path,
-    backend: str = "basic-pitch",
+    backend: str = "bytedance",
     device: str = "cpu",
     **kwargs,
 ) -> Path:
