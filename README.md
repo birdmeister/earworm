@@ -43,26 +43,32 @@ YouTube URL
 
 ## Current status
 
-**🚧 Early development — proof of concept**
+**🚧 Early development — pipeline verified end-to-end**
 
-The core pipeline (YouTube → source separation → MIDI transcription) is functional as a CLI tool. Difficulty generation and the play-along interface are next.
+The core pipeline (YouTube → source separation → MIDI transcription) is working. Tested with solo piano (Beethoven's Für Elise) and mixed audio (pop songs). Difficulty generation (rule-based) is implemented. The play-along web interface is next.
 
 ## Quick start
 
 ### Requirements
 
-- Python 3.10+
+- Python 3.12 (3.13 not yet supported by ML ecosystem)
+- [uv](https://docs.astral.sh/uv/) for package management
 - FFmpeg (for audio processing)
-- A CUDA-capable GPU is recommended but not required
+- A CUDA-capable GPU is recommended but not required (CPU works fine)
 
 ### Installation
 
 ```bash
-git clone https://github.com/yourname/earworm.git
+git clone https://github.com/birdmeister/earworm.git
 cd earworm
-python -m venv venv
-source venv/bin/activate  # or venv\Scripts\activate on Windows
-pip install -r requirements.txt
+uv sync --extra bytedance --extra dev
+```
+
+On macOS without Homebrew, install FFmpeg via:
+```bash
+uv tool install static-ffmpeg
+ln -sf ~/.local/bin/static_ffmpeg ~/.local/bin/ffmpeg
+ln -sf ~/.local/bin/static_ffprobe ~/.local/bin/ffprobe
 ```
 
 ### Usage
@@ -70,7 +76,7 @@ pip install -r requirements.txt
 Process a YouTube video into MIDI:
 
 ```bash
-python -m earworm.pipeline.process "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+uv run earworm "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
 ```
 
 This will create a folder in `output/` with:
@@ -81,13 +87,14 @@ This will create a folder in `output/` with:
 ### Options
 
 ```bash
-python -m earworm.pipeline.process --help
+uv run earworm --help
 
 Options:
   --output-dir PATH      Output directory (default: ./output)
   --skip-separation      Skip source separation, transcribe raw audio
-  --transcriber TEXT     Choose transcriber: "basic-pitch" or "bytedance" (default: basic-pitch)
-  --device TEXT          Device for ML models: "cuda" or "cpu" (default: auto-detect)
+  --transcriber TEXT     Choose transcriber: "bytedance" or "basic-pitch" (default: bytedance)
+  --device TEXT          Device for ML models: "cuda", "cpu", or "auto" (default: auto)
+  --demucs-model TEXT    Demucs model to use (default: htdemucs)
 ```
 
 ## Project structure
@@ -112,7 +119,6 @@ earworm/
 ├── docs/
 ├── examples/
 ├── output/                    # Generated files end up here
-├── requirements.txt
 ├── pyproject.toml
 └── README.md
 ```
@@ -150,8 +156,9 @@ earworm/
 
 - [x] Audio extraction from YouTube
 - [x] Source separation with Demucs
-- [x] Audio-to-MIDI transcription
-- [ ] Rule-based difficulty simplification (3 levels)
+- [x] Audio-to-MIDI transcription (ByteDance, default)
+- [x] End-to-end pipeline verified (solo piano + mixed audio)
+- [x] Rule-based difficulty simplification (3 levels)
 - [ ] AI-based difficulty adjustment (diff2diff integration)
 - [ ] Web interface with falling-notes visualisation
 - [ ] Web MIDI API integration for real-time keyboard feedback

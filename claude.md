@@ -14,11 +14,11 @@ Earworm turns any YouTube video into a playable piano lesson at multiple difficu
 
 ## Current status
 
-- Stages 1-3: implemented as CLI (`earworm/pipeline/`)
+- Stages 1-3: implemented and verified end-to-end (`earworm/pipeline/`)
 - Stage 4: rule-based simplification implemented (`earworm/difficulty/`), AI-based (diff2diff) planned
 - Stage 5: not started (`earworm/web/`)
 - 7 passing tests in `tests/test_difficulty.py`
-- Not yet tested end-to-end with real audio (dependencies just got working)
+- Tested with solo piano (Für Elise) and mixed audio (pop songs)
 
 ## Key technical decisions
 
@@ -27,6 +27,13 @@ Earworm turns any YouTube video into a playable piano lesson at multiple difficu
 - **ByteDance transcriber is default** — Basic Pitch (Spotify) requires TensorFlow which causes `tensorflow-macos` hell on macOS. Basic Pitch is deliberately excluded from pyproject.toml. Users can install it manually if needed.
 - **PyTorch only** in core deps — Demucs and ByteDance both use PyTorch
 - **MIT licence**
+
+## Known workarounds
+
+- **torchaudio 2.10+** hardcodes `torchcodec` for `save()` with no fallback. `separate.py` runs demucs via a wrapper that monkey-patches `torchaudio.save` to use `soundfile` instead.
+- **piano_transcription_inference** uses deprecated `librosa.core.audio.util.buf_to_float`. `transcribe.py` uses `librosa.load()` directly instead of the package's `load_audio`.
+- **piano_transcription_inference** downloads its model checkpoint via `wget`. Pre-download with `curl` to `~/piano_transcription_inference_data/` if `wget` is not installed.
+- **FFmpeg**: `static-ffmpeg` (via `uv tool install`) provides static binaries; symlink `static_ffmpeg` → `ffmpeg` in `~/.local/bin/`.
 
 ## Project structure
 
@@ -77,11 +84,10 @@ Owner uses a Yamaha P-45 (USB-MIDI) for testing.
 
 ## Planned next steps
 
-1. End-to-end test with real YouTube audio
-2. diff2diff integration for AI-based difficulty simplification (pramoneda.github.io/diff2diff)
-3. Web interface with falling-notes visualisation (React or Svelte)
-4. Web MIDI API integration for real-time keyboard input
-5. Wait mode, loop mode, hand separation, tempo control
+1. diff2diff integration for AI-based difficulty simplification (pramoneda.github.io/diff2diff)
+2. Web interface with falling-notes visualisation (React or Svelte)
+3. Web MIDI API integration for real-time keyboard input
+4. Wait mode, loop mode, hand separation, tempo control
 
 ## Style notes
 
