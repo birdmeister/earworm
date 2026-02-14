@@ -12,7 +12,7 @@ abstract class SongRepository {
 
 class LocalSongRepository implements SongRepository {
   final String outputDir;
-  final _parser = MidiParser();
+  final _parser = MidiFileParser();
 
   LocalSongRepository({required this.outputDir});
 

@@ -1,10 +1,10 @@
 import 'dart:typed_data';
-import 'package:dart_midi_pro/dart_midi_pro.dart';
+import 'package:dart_midi_pro/dart_midi_pro.dart' as midi_lib;
 import '../models/note_event.dart';
 
-class MidiParser {
+class MidiFileParser {
   List<NoteEvent> parse(Uint8List bytes) {
-    final midi = MidiParser().parseMidiFromBuffer(bytes);
+    final midi = midi_lib.MidiParser().parseMidiFromBuffer(bytes);
     final ticksPerBeat = midi.header.ticksPerBeat ?? 480;
     final tempoMap = _buildTempoMap(midi.tracks);
     final notes = <NoteEvent>[];
@@ -14,19 +14,19 @@ class MidiParser {
       final pending = <int, _PendingNote>{};
 
       for (final event in track) {
-        absoluteTick += event.deltaTime;
+        absoluteTick += event.deltaTime.toInt();
 
-        if (event is NoteOnEvent && event.velocity > 0) {
+        if (event is midi_lib.NoteOnEvent && event.velocity > 0) {
           pending[event.noteNumber] = _PendingNote(
             pitch: event.noteNumber,
             velocity: event.velocity,
             startTick: absoluteTick,
           );
-        } else if (event is NoteOffEvent ||
-            (event is NoteOnEvent && event.velocity == 0)) {
-          final pitch = event is NoteOffEvent
+        } else if (event is midi_lib.NoteOffEvent ||
+            (event is midi_lib.NoteOnEvent && event.velocity == 0)) {
+          final pitch = event is midi_lib.NoteOffEvent
               ? event.noteNumber
-              : (event as NoteOnEvent).noteNumber;
+              : (event as midi_lib.NoteOnEvent).noteNumber;
           final p = pending.remove(pitch);
           if (p != null) {
             final startSec = _ticksToSeconds(p.startTick, ticksPerBeat, tempoMap);
@@ -46,13 +46,13 @@ class MidiParser {
     return notes;
   }
 
-  List<_TempoEntry> _buildTempoMap(List<List<MidiEvent>> tracks) {
+  List<_TempoEntry> _buildTempoMap(List<List<midi_lib.MidiEvent>> tracks) {
     final entries = <_TempoEntry>[];
     for (final track in tracks) {
       var absoluteTick = 0;
       for (final event in track) {
-        absoluteTick += event.deltaTime;
-        if (event is SetTempoEvent) {
+        absoluteTick += event.deltaTime.toInt();
+        if (event is midi_lib.SetTempoEvent) {
           entries.add(_TempoEntry(tick: absoluteTick, microsecondsPerBeat: event.microsecondsPerBeat));
         }
       }

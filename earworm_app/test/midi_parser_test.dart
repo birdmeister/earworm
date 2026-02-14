@@ -15,7 +15,7 @@ void main() {
       if (!await file.exists()) return;
 
       final bytes = await file.readAsBytes();
-      final notes = MidiParser().parse(Uint8List.fromList(bytes));
+      final notes = MidiFileParser().parse(Uint8List.fromList(bytes));
 
       expect(notes.length, greaterThan(100));
 
